@@ -1,0 +1,47 @@
+!!! 5
+html
+  head
+    script(src="/socket.io/socket.io.js")
+    link(rel="stylesheet", href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.4/js/dojo/dijit/themes/claro/claro.css")
+    link(rel="stylesheet", href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.4/js/esri/css/esri.css")
+    script(src="http://serverapi.arcgisonline.com/jsapi/arcgis/3.4/")
+    script(src="http://code.jquery.com/jquery-1.9.1.min.js")
+    style(type="text/css")
+      #map { position:relative; width:900px; height:600px; border:1px solid #000; }
+      #info { position:absolute; left:15px; bottom:5px; color:#000; z-index:50; }
+    script
+      var socket = io.connect('http://localhost');
+      socket.on('userCountUpdate', function (data) {
+        //console.log(data);
+      });
+      socket.on('pointsUpdate', function (data) {
+        //console.log(data);
+        map.graphics.clear();
+        for (var i in data.pointsCollection) {
+          var graphic = new esri.Graphic(new esri.geometry.Point(data.pointsCollection[i].x, data.pointsCollection[i].y, map.spatialReferenc),
+                                         new esri.symbol.PictureMarkerSymbol("./images/red-pin.png", 24, 24));
+          map.graphics.add(graphic);
+        }
+      });
+      dojo.require("esri.map");
+      function init() {
+        map = new esri.Map("map",{
+          basemap:"topo",
+          center:[-122.45,37.75],
+          zoom:4,
+          sliderStyle:"small"
+        });
+        dojo.connect(map, "onLoad", function() {
+          dojo.connect(map, "onClick", function(evt) {
+            var mp = esri.geometry.webMercatorToGeographic(evt.mapPoint);
+            map.graphics.add(new esri.Graphic(mp, new esri.symbol.PictureMarkerSymbol("./images/red-pin.png", 24, 24)));
+            socket.emit('addPoint', { x: mp.x.toFixed(3), y: mp.y.toFixed(3) });
+          });
+        });
+      }
+      function mapInit() {
+      
+      }
+      dojo.ready(init);
+  body
+    div#map
