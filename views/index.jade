@@ -10,6 +10,7 @@ html
       #map { position:relative; width:900px; height:600px; border:1px solid #000; }
       #info { position:absolute; left:15px; bottom:5px; color:#000; z-index:50; }
     script
+      dojo.require("esri.map");
       var socket = io.connect('http://localhost');
       socket.on('userCountUpdate', function (data) {
         //console.log(data);
@@ -23,7 +24,6 @@ html
           map.graphics.add(graphic);
         }
       });
-      dojo.require("esri.map");
       function init() {
         map = new esri.Map("map",{
           basemap:"topo",
@@ -38,9 +38,6 @@ html
             socket.emit('addPoint', { x: mp.x.toFixed(3), y: mp.y.toFixed(3) });
           });
         });
-      }
-      function mapInit() {
-      
       }
       dojo.ready(init);
   body
